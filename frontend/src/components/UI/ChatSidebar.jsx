@@ -2,14 +2,14 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import './ChatSidebar.css';
 
-const ChatSidebar = ({ sessions, activeChatId, onSelect, onNew, onDelete }) => {
+const ChatSidebar = ({ sessions, activeChatId, onSelect, onNew, onDelete, onHome }) => {
   const { user, logout } = useAuth();
 
   return (
     <aside className="sidebar">
-      <div className="sidebar__header">
+      <div className="sidebar__header" onClick={onHome} style={{ cursor: 'pointer' }}>
         <span className="sidebar__logo">🎙️</span>
-        <span className="sidebar__appname">AI Assistant</span>
+        <span className="sidebar__appname">InterVV</span>
       </div>
 
       <button className="sidebar__new-btn" onClick={onNew}>

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 import { useAuth } from './context/AuthContext';
-import { sendMessage, getChatSessions, getChatById, deleteChat } from './services/chatApi';
+import { sendMessage, getChatSessions, getChatById, deleteChat } from './services/chatApi/';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 
 import HomePage from './pages/HomePage';
