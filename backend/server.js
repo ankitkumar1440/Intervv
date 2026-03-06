@@ -1,12 +1,12 @@
-require('dotenv').config();
+require("dotenv").config();
 
-const app       = require('./config/app');
-const connectDB = require('./config/db');
-const { PORT }  = require('./constants/server');
+const app = require("./config/app");
+const connectDB = require("./config/db");
+
+const PORT = process.env.PORT || 5000;
 
 connectDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`🚀  Server  →  http://localhost:${PORT}`);
-    console.log(`📡  Health  →  http://localhost:${PORT}/health`);
+    console.log(`🚀 Server running on port ${PORT}`);
   });
 });
