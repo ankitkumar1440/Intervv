@@ -2,74 +2,65 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import './ChatSidebar.css';
 
-const ChatSidebar = ({ sessions, activeChatId, onSelect, onNew, onDelete, onHome }) => {
+const ChatSidebar = ({ sessions, activeChatId, onSelect, onNew, onDelete, onHome, isOpen, onClose }) => {
   const { user, logout } = useAuth();
 
-  const handleHomeClick = (e) => {
-    // debug: trace clicks to verify handler flow
-    // eslint-disable-next-line no-console
-    console.log('ChatSidebar: handleHomeClick fired, onHome is', typeof onHome);
-    if (typeof onHome === 'function') onHome(e);
-  };
-
-  const handleHomeKey = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleHomeClick(e);
-    }
-  };
-
   return (
-    <aside className="sidebar">
-      <div
-        className="sidebar__header"
-        onClick={handleHomeClick}
-        onKeyDown={handleHomeKey}
-        role="button"
-        tabIndex={0}
-        style={{ cursor: 'pointer' }}
-      >
-        <span className="sidebar__logo">🎙️</span>
-        <span className="sidebar__appname">InterVV</span>
-      </div>
+    <>
+      {/* Overlay for mobile */}
+      {isOpen && <div className="sidebar__overlay" onClick={onClose} />}
 
-      <button className="sidebar__new-btn" onClick={onNew}>
-        + New Chat
-      </button>
+      <aside className={`sidebar${isOpen ? ' sidebar--open' : ''}`}>
+        <div className="sidebar__header" onClick={onHome} style={{ cursor: 'pointer' }}>
+          <span className="sidebar__logo">🎙️</span>
+          <span className="sidebar__appname">AI Assistant</span>
+          {/* Close button on mobile */}
+          <button
+            className="sidebar__close-btn"
+            onClick={(e) => { e.stopPropagation(); onClose(); }}
+            title="Close sidebar"
+          >✕</button>
+        </div>
 
-      <div className="sidebar__sessions">
-        {sessions.length === 0 && (
-          <p className="sidebar__empty">No chats yet</p>
-        )}
-        {sessions.map((s) => (
-          <div
-            key={s._id}
-            className={`sidebar__session${s._id === activeChatId ? ' sidebar__session--active' : ''}`}
-            onClick={() => onSelect(s._id)}
-          >
-            <span className="sidebar__session-title">{s.title || 'Untitled'}</span>
-            <button
-              className="sidebar__delete-btn"
-              onClick={(e) => { e.stopPropagation(); onDelete(s._id); }}
-              title="Delete chat"
+        <button className="sidebar__new-btn" onClick={onNew}>
+          + New Chat
+        </button>
+
+        <div className="sidebar__sessions">
+          {sessions.length === 0 && (
+            <p className="sidebar__empty">No chats yet</p>
+          )}
+          {sessions.map((s) => (
+            <div
+              key={s._id}
+              className={`sidebar__session${s._id === activeChatId ? ' sidebar__session--active' : ''}`}
+              onClick={() => { onSelect(s._id); onClose(); }}
             >
-              🗑
-            </button>
-          </div>
-        ))}
-      </div>
+              <span className="sidebar__session-title">{s.title || 'Untitled'}</span>
+              <button
+                className="sidebar__delete-btn"
+                onClick={(e) => { e.stopPropagation(); onDelete(s._id); }}
+                title="Delete chat"
+              >🗑</button>
+            </div>
+          ))}
+        </div>
 
-      <div className="sidebar__footer">
-        <div className="sidebar__user">
-          <span className="sidebar__user-avatar">🧑</span>
-          <div>
-            <p className="sidebar__user-name">{user?.name}</p>
-            <p className="sidebar__user-email">{user?.email}</p>
+        <div className="sidebar__footer">
+          <div className="sidebar__user">
+            <span className="sidebar__user-avatar">🧑</span>
+            <div>
+              <p className="sidebar__user-name">{user?.name}</p>
+              <p className="sidebar__user-email">{user?.email}</p>
+            </div>
+          </div>
+          <div className="sidebar__footer-btns">
+            <button className="sidebar__home-btn" onClick={onHome} title="Home">🏠</button>
+            <button className="sidebar__logout" onClick={logout} title="Log out">↩</button>
           </div>
         </div>
-        <button className="sidebar__logout" onClick={logout} title="Log out">↩</button>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 };
 
