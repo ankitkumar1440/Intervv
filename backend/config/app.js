@@ -7,10 +7,6 @@ const chatRoutes       = require('../routes/chatRoutes');
 
 const app = express();
 
-// Core Middleware
-// Allow the configured FRONTEND_URL in production, but during development
-// allow requests from any origin so local network devices (your phone) can
-// access the API. For production, set FRONTEND_URL to the deployed frontend URL.
 const corsOptions = {
   methods: ['GET', 'POST', 'DELETE'],
   credentials: true,
@@ -19,7 +15,6 @@ const corsOptions = {
 if (process.env.NODE_ENV === 'production') {
   corsOptions.origin = FRONTEND_URL;
 } else {
-  // development: allow any origin (useful when testing from phone on the same LAN)
   corsOptions.origin = true;
 }
 
