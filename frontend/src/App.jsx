@@ -174,6 +174,13 @@ function App() {
     if (activeChatId === chatId) handleNewChat();
   };
 
+  if (!isLoggedIn) {
+  return authPage === 'home'
+    ? <HomePage onLogin={() => setAuthPage('login')} onSignup={() => setAuthPage('signup')} />
+    : authPage === 'login'
+    ? <LoginPage  onSwitch={() => setAuthPage('signup')} onHome={() => setAuthPage('home')} />
+    : <SignupPage onSwitch={() => setAuthPage('login')}  onHome={() => setAuthPage('home')} />;
+}
 
   if (showHome) {
   return <HomePage
@@ -181,14 +188,6 @@ function App() {
     onSignup={() => { setShowHome(false); setAuthPage('signup'); }}
     onChat={() => setShowHome(false)}
   />;
-}
-
-  if (!isLoggedIn) {
-  return authPage === 'home'
-    ? <HomePage onLogin={() => setAuthPage('login')} onSignup={() => setAuthPage('signup')} />
-    : authPage === 'login'
-    ? <LoginPage  onSwitch={() => setAuthPage('signup')} onHome={() => setAuthPage('home')} />
-    : <SignupPage onSwitch={() => setAuthPage('login')}  onHome={() => setAuthPage('home')} />;
 }
 
   return (
