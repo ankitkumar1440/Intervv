@@ -17,7 +17,7 @@ import './styles/app.css';
 
 function App() {
   const { isLoggedIn } = useAuth();
-  const [authPage,     setAuthPage]     = useState('login');
+  const [authPage,     setAuthPage]     = useState('home');
   const [showHome,     setShowHome]     = useState(false);
   const [sidebarOpen,  setSidebarOpen]  = useState(false);
   const [sessions,     setSessions]     = useState([]);
