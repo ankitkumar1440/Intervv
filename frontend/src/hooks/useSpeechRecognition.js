@@ -17,7 +17,7 @@ export const useSpeechRecognition = (onLive, onFinal) => {
 
     const sr = new SR();
 
-    sr.continuous = true;      // 👈 keep listening
+    sr.continuous = false;      // 👈 keep listening
     sr.interimResults = true;
     sr.lang = 'en-US';
 
