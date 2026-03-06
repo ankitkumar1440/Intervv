@@ -1,0 +1,77 @@
+.auth-page {
+  min-height: 100dvh;
+  display: grid; place-items: center;
+  background: var(--bg);
+  padding: 24px;
+}
+
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px 36px;
+  width: 100%; max-width: 420px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.auth-card__logo    { font-size: 2.4rem; text-align: center; margin-bottom: 4px; }
+.auth-card__title   { font-size: 1.4rem; font-weight: 700; text-align: center; }
+.auth-card__subtitle{ font-size: 0.88rem; color: var(--text-muted); text-align: center; margin-bottom: 10px; }
+
+.auth-error {
+  background: rgba(255,79,106,0.1);
+  border: 1px solid var(--error);
+  color: var(--error);
+  padding: 10px 14px; border-radius: 8px;
+  font-size: 0.87rem;
+}
+
+.auth-form         { display: flex; flex-direction: column; gap: 16px; margin-top: 8px; }
+.auth-form__field  { display: flex; flex-direction: column; gap: 6px; }
+.auth-form__field label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+.auth-form__field input {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text);
+  padding: 11px 14px; font-size: 0.95rem; outline: none;
+  transition: border-color 0.2s;
+}
+.auth-form__field input:focus { border-color: var(--accent); }
+
+.auth-btn {
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 8px;
+  padding: 13px; font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; margin-top: 4px;
+  transition: opacity 0.2s;
+}
+.auth-btn:hover:not(:disabled) { opacity: 0.88; }
+.auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.auth-switch {
+  text-align: center; font-size: 0.87rem;
+  color: var(--text-muted); margin-top: 8px;
+}
+.auth-switch button {
+  background: none; border: none;
+  color: var(--accent); cursor: pointer;
+  font-size: inherit; font-weight: 600;
+  padding: 0;
+}
+.auth-switch button:hover { text-decoration: underline; }
+
+.auth-back {
+  text-align: center;
+  font-size: 0.87rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.auth-back button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: inherit;
+  padding: 0;
+  transition: color 0.2s;
+}
+.auth-back button:hover { color: var(--text); }

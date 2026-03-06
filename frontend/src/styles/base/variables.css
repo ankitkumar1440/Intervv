@@ -1,0 +1,25 @@
+/* Design Tokens */
+:root {
+  /* Surfaces */
+  --bg:        #0d0f14;
+  --surface:   #161a24;
+  --surface-2: #1e2333;
+  --border:    #2a2f45;
+
+  /* Accent */
+  --accent:    #4f8ef7;
+
+  /* Text */
+  --text:      #e8eaf2;
+  --text-muted:#6b7194;
+
+  /* Semantic */
+  --error:     #ff4f6a;
+  --success:   #3dd68c;
+
+  /* Chat bubbles */
+  --user-bubble: #1e3a6e;
+
+  /* Shape */
+  --radius: 14px;
+}
