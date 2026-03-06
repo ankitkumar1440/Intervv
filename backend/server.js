@@ -1,13 +1,12 @@
-require("dotenv").config();
+require('dotenv').config();
 
-const app = require("./config/app");
-const connectDB = require("./config/db");
-
-const PORT = process.env.PORT || 5000;
+const app       = require('./config/app');
+const connectDB = require('./config/db');
+const { PORT }  = require('./constants/server');
 
 connectDB().then(() => {
-  const HOST = process.env.HOST || '0.0.0.0';
-  app.listen(PORT, HOST, () => {
-    console.log(`🚀 Server running on ${HOST}:${PORT}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀  Server  →  http://0.0.0.0:${PORT}`);
+    console.log(`📡  Health  →  http://0.0.0.0:${PORT}/health`);
   });
 });

@@ -2,8 +2,12 @@ import axios from 'axios';
 
 const TOKEN_KEY = 'ai_assistant_token';
 
+const defaultHost = (typeof window !== 'undefined' && window.location && window.location.hostname)
+  ? `${window.location.protocol}//${window.location.hostname}:5000`
+  : 'http://localhost:5000';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+  baseURL: import.meta.env.VITE_API_URL || defaultHost,
   timeout: 30_000,
   headers: { 'Content-Type': 'application/json' },
 });
