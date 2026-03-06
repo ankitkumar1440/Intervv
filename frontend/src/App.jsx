@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 import { useAuth } from './context/AuthContext';
-import { sendMessage, getChatSessions, getChatById, deleteChat } from './services/chatApi/';
+import { sendMessage, getChatSessions, getChatById, deleteChat } from './services/chatApi';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 
 import HomePage from './pages/HomePage';
@@ -20,6 +20,7 @@ function App() {
   const { isLoggedIn } = useAuth();
 
   const [authPage, setAuthPage] = useState('home');
+  const [showHome, setShowHome] = useState(false);
   const [sessions, setSessions] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -91,7 +92,7 @@ function App() {
     speechTimeoutRef.current = setTimeout(() => {
       handleSend();
       speechTimeoutRef.current = null;
-    },);
+    }, 2000);
   }
 );
 
@@ -173,6 +174,15 @@ function App() {
     if (activeChatId === chatId) handleNewChat();
   };
 
+
+  if (showHome) {
+  return <HomePage
+    onLogin={() => { setShowHome(false); setAuthPage('login'); }}
+    onSignup={() => { setShowHome(false); setAuthPage('signup'); }}
+    onChat={() => setShowHome(false)}
+  />;
+}
+
   if (!isLoggedIn) {
   return authPage === 'home'
     ? <HomePage onLogin={() => setAuthPage('login')} onSignup={() => setAuthPage('signup')} />
@@ -189,6 +199,7 @@ function App() {
         onSelect={handleSelectChat}
         onNew={handleNewChat}
         onDelete={handleDeleteChat}
+        onHome={() => setShowHome(true)}
       />
 
       <div className="app-main">
