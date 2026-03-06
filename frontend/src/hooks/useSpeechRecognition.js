@@ -28,31 +28,24 @@ export const useSpeechRecognition = (onLive, onFinal) => {
     };
 
     sr.onresult = (event) => {
-      let liveText = '';
+  if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
 
-      // Reset silence timer on every speech detection
-      if (silenceTimerRef.current) {
-        clearTimeout(silenceTimerRef.current);
-      }
+  silenceTimerRef.current = setTimeout(() => sr.stop(), 2000);
 
-      silenceTimerRef.current = setTimeout(() => {
-        sr.stop();  // 👈 stop after 2 seconds silence
-      }, 2000);
+  let interimText = '';
 
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
+  for (let i = event.resultIndex; i < event.results.length; i++) {
+    const transcript = event.results[i][0].transcript;
+    if (event.results[i].isFinal) {
+      finalTranscriptRef.current += transcript;
+    } else {
+      interimText += transcript;
+    }
+  }
 
-        if (event.results[i].isFinal) {
-          finalTranscriptRef.current += transcript;
-        } else {
-          liveText += transcript;
-        }
-      }
-
-      if (liveText) {
-        onLive(liveText);
-      }
-    };
+  const display = finalTranscriptRef.current + interimText;
+  onLive(display);
+};
 
     sr.onend = () => {
       setIsListening(false);
