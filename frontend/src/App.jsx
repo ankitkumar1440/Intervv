@@ -40,9 +40,17 @@ function App() {
 
   // Speech hook — receives text via callback, writes directly to textarea DOM
   const { isListening, isSupported, error: speechError, clearError, startListening, stopListening } =
-    useSpeechRecognition((text) => {
-      if (textareaRef.current) textareaRef.current.value = text;
-    });
+  useSpeechRecognition(
+    // Live text — show as typing
+    (liveText) => {
+      if (textareaRef.current) textareaRef.current.value = liveText;
+    },
+    // Final text — send message
+    (finalText) => {
+      if (textareaRef.current) textareaRef.current.value = finalText;
+      setTimeout(() => handleSend(), 500);
+    }
+  );
 
   const visibleError = error || speechError;
 
