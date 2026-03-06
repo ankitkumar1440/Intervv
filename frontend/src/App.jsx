@@ -48,7 +48,7 @@ function App() {
     // Final text — send message
     (finalText) => {
       if (textareaRef.current) textareaRef.current.value = finalText;
-      setTimeout(() => handleSend(), 500);
+      setTimeout(() => handleSend(), 100);
     }
   );
 

@@ -71,8 +71,9 @@ export const useSpeechRecognition = (onLive, onFinal) => {
   }, [isSupported]);
 
   const startListening = useCallback(() => {
-    srRef.current?.start();
-  }, []);
+  finalTranscriptRef.current = '';
+  srRef.current?.start();
+}, []);
 
   const stopListening = useCallback(() => {
     srRef.current?.stop();
