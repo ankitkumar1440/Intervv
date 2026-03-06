@@ -6,7 +6,6 @@ const ChatSidebar = ({ sessions, activeChatId, onSelect, onNew, onDelete, onHome
   const { user, logout } = useAuth();
 
   const handleHomeClick = (e) => {
-    // guard and call provided handler
     if (typeof onHome === 'function') onHome(e);
   };
 
