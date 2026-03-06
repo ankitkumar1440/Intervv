@@ -5,9 +5,28 @@ import './ChatSidebar.css';
 const ChatSidebar = ({ sessions, activeChatId, onSelect, onNew, onDelete, onHome }) => {
   const { user, logout } = useAuth();
 
+  const handleHomeClick = (e) => {
+    // guard and call provided handler
+    if (typeof onHome === 'function') onHome(e);
+  };
+
+  const handleHomeKey = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleHomeClick(e);
+    }
+  };
+
   return (
     <aside className="sidebar">
-      <div className="sidebar__header" onClick={onHome} style={{ cursor: 'pointer' }}>
+      <div
+        className="sidebar__header"
+        onClick={handleHomeClick}
+        onKeyDown={handleHomeKey}
+        role="button"
+        tabIndex={0}
+        style={{ cursor: 'pointer' }}
+      >
         <span className="sidebar__logo">🎙️</span>
         <span className="sidebar__appname">InterVV</span>
       </div>
