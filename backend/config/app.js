@@ -7,10 +7,11 @@ const chatRoutes       = require('../routes/chatRoutes');
 
 const app = express();
 
-const corsOptions = {
+app.use(cors({
+  origin: '*',
   methods: ['GET', 'POST', 'DELETE'],
-  credentials: true,
-};
+  credentials: false,
+}));
 
 if (process.env.NODE_ENV === 'production') {
   corsOptions.origin = FRONTEND_URL;
