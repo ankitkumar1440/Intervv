@@ -198,7 +198,7 @@ function App() {
         onSelect={handleSelectChat}
         onNew={handleNewChat}
         onDelete={handleDeleteChat}
-        onHome={() => setShowHome(true)}
+        onHome={() => { setShowHome(true); }}
       />
 
       <div className="app-main">

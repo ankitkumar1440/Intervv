@@ -6,6 +6,9 @@ const ChatSidebar = ({ sessions, activeChatId, onSelect, onNew, onDelete, onHome
   const { user, logout } = useAuth();
 
   const handleHomeClick = (e) => {
+    // debug: trace clicks to verify handler flow
+    // eslint-disable-next-line no-console
+    console.log('ChatSidebar: handleHomeClick fired, onHome is', typeof onHome);
     if (typeof onHome === 'function') onHome(e);
   };
 
