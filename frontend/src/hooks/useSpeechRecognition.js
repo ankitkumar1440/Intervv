@@ -4,90 +4,113 @@ const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 export const useSpeechRecognition = (onLive, onFinal) => {
   const [isListening, setIsListening] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError]             = useState(null);
+  const isSupported                   = Boolean(SR);
 
-  const srRef = useRef(null);
-  const silenceTimerRef = useRef(null);
-  // Stores only the portion of speech already marked as "final" by the browser
-  const committedRef = useRef('');
+  // Always-current callback refs — never go stale inside event handlers
+  const onLiveRef  = useRef(onLive);
+  const onFinalRef = useRef(onFinal);
+  useEffect(() => { onLiveRef.current  = onLive;  }, [onLive]);
+  useEffect(() => { onFinalRef.current = onFinal; }, [onFinal]);
 
-  const isSupported = Boolean(SR);
+  const srRef            = useRef(null);
+  const silenceTimerRef  = useRef(null);
+  const committedRef     = useRef('');   // finalized speech text
+  const lastInterimRef   = useRef('');   // fallback if nothing is ever 'final'
+  const isListeningRef   = useRef(false);
 
-  useEffect(() => {
+  const clearSilenceTimer = () => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+  };
+
+  const startListening = useCallback(() => {
     if (!isSupported) return;
+    if (isListeningRef.current) return; // already running
 
+    // Create a FRESH instance every time — reusing a stopped instance
+    // throws InvalidStateError in Chrome/Safari
     const sr = new SR();
-
-    // continuous=true: browser keeps the session alive; we stop it via silence timer
-    sr.continuous = true;
+    sr.continuous     = true;
     sr.interimResults = true;
-    sr.lang = 'en-US';
+    sr.lang           = 'en-US';
+
+    committedRef.current   = '';
+    lastInterimRef.current = '';
 
     sr.onstart = () => {
+      isListeningRef.current = true;
       setIsListening(true);
       setError(null);
-      committedRef.current = '';
     };
 
     sr.onresult = (event) => {
-      // Reset the silence timer on every new speech chunk
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = setTimeout(() => sr.stop(), 500);
+      // Reset silence timer on every new chunk
+      clearSilenceTimer();
+      silenceTimerRef.current = setTimeout(() => sr.stop(), 1500);
 
-      // Rebuild the committed portion from scratch using ALL final results so far
-      // (avoids double-appending on repeated events for the same result index)
+      // Rebuild from scratch — idempotent, never double-counts
       let committed = '';
-      let interim = '';
+      let interim   = '';
 
       for (let i = 0; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
+        const text = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          committed += transcript;
+          committed += text;
         } else {
-          interim += transcript;
+          interim += text;
         }
       }
 
-      committedRef.current = committed;
-      onLive(committed + interim);
+      committedRef.current   = committed;
+      lastInterimRef.current = interim;
+      onLiveRef.current(committed + interim);
     };
 
     sr.onend = () => {
+      isListeningRef.current = false;
       setIsListening(false);
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      clearSilenceTimer();
+      srRef.current = null;
 
-      if (committedRef.current) {
-        onFinal(committedRef.current);
+      // Use committed text; fall back to last interim if browser never
+      // returned a final result (happens on some mobile browsers)
+      const result = committedRef.current || lastInterimRef.current;
+      if (result.trim()) {
+        onFinalRef.current(result.trim());
       }
     };
 
     sr.onerror = (event) => {
-      if (event.error !== 'no-speech') {
-        setError(event.error);
+      // 'no-speech' and 'aborted' are expected — don't surface as errors
+      if (event.error !== 'no-speech' && event.error !== 'aborted') {
+        setError(`Mic error: ${event.error}`);
       }
+      isListeningRef.current = false;
       setIsListening(false);
+      clearSilenceTimer();
+      srRef.current = null;
     };
 
     srRef.current = sr;
+    try {
+      sr.start();
+    } catch (e) {
+      // start() can throw if called before onend fires from a previous session
+      setError('Could not start microphone. Try again.');
+      isListeningRef.current = false;
+      setIsListening(false);
+    }
   }, [isSupported]);
 
-  const startListening = useCallback(() => {
-    committedRef.current = '';
-    srRef.current?.start();
-  }, []);
-
   const stopListening = useCallback(() => {
+    clearSilenceTimer();
     srRef.current?.stop();
   }, []);
 
   const clearError = useCallback(() => setError(null), []);
 
-  return {
-    isListening,
-    isSupported,
-    error,
-    startListening,
-    stopListening,
-    clearError,
-  };
+  return { isListening, isSupported, error, startListening, stopListening, clearError };
 };
