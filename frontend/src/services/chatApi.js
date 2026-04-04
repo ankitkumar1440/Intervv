@@ -8,7 +8,7 @@ const defaultHost = (typeof window !== 'undefined' && window.location && window.
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || defaultHost,
-  timeout: 30_000,
+  timeout: 60_000,   // 60s — Railway free tier can take up to 30s to wake
   headers: { 'Content-Type': 'application/json' },
 });
 

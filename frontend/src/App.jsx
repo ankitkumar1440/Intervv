@@ -79,7 +79,11 @@ function App() {
         await loadSessions();
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Could not reach the backend.');
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        setError('Server is waking up — please try again in a few seconds.');
+      } else {
+        setError(err.response?.data?.error || 'Could not reach the backend.');
+      }
     } finally {
       setLoading(false);
     }

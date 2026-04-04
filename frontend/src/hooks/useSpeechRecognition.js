@@ -13,11 +13,11 @@ export const useSpeechRecognition = (onLive, onFinal) => {
   useEffect(() => { onLiveRef.current  = onLive;  }, [onLive]);
   useEffect(() => { onFinalRef.current = onFinal; }, [onFinal]);
 
-  const srRef            = useRef(null);
-  const silenceTimerRef  = useRef(null);
-  const committedRef     = useRef('');   // finalized speech text
-  const lastInterimRef   = useRef('');   // fallback if nothing is ever 'final'
-  const isListeningRef   = useRef(false);
+  const srRef             = useRef(null);
+  const silenceTimerRef   = useRef(null);
+  const shouldRestartRef  = useRef(false);  // true while user wants to keep listening
+  const accumulatedRef    = useRef('');     // text collected across all sessions
+  const sessionInterimRef = useRef('');     // interim from the current session only
 
   const clearSilenceTimer = () => {
     if (silenceTimerRef.current) {
@@ -26,35 +26,33 @@ export const useSpeechRecognition = (onLive, onFinal) => {
     }
   };
 
-  const startListening = useCallback(() => {
+  // Creates and starts one SR session (continuous=false).
+  // Restarts itself via onend while shouldRestartRef is true.
+  const createSession = useCallback(() => {
     if (!isSupported) return;
-    if (isListeningRef.current) return; // already running
 
-    // Create a FRESH instance every time — reusing a stopped instance
-    // throws InvalidStateError in Chrome/Safari
     const sr = new SR();
-    sr.continuous     = true;
+    // continuous=false: one utterance per session.
+    // Avoids the Android Chrome bug where continuous=true causes the browser
+    // to restart internally, re-firing onresult with already-heard words.
+    sr.continuous     = false;
     sr.interimResults = true;
     sr.lang           = 'en-US';
 
-    committedRef.current   = '';
-    lastInterimRef.current = '';
-
-    sr.onstart = () => {
-      isListeningRef.current = true;
-      setIsListening(true);
-      setError(null);
-    };
+    // Per-session final text
+    let sessionFinal = '';
 
     sr.onresult = (event) => {
-      // Reset silence timer on every new chunk
+      // Reset silence timer — if user pauses >1500ms we stop completely
       clearSilenceTimer();
-      silenceTimerRef.current = setTimeout(() => sr.stop(), 1500);
+      silenceTimerRef.current = setTimeout(() => {
+        shouldRestartRef.current = false;
+        sr.stop();
+      }, 1500);
 
-      // Rebuild from scratch — idempotent, never double-counts
+      // Rebuild only from THIS session's results (no cross-session accumulation)
       let committed = '';
       let interim   = '';
-
       for (let i = 0; i < event.results.length; i++) {
         const text = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
@@ -64,48 +62,77 @@ export const useSpeechRecognition = (onLive, onFinal) => {
         }
       }
 
-      committedRef.current   = committed;
-      lastInterimRef.current = interim;
-      onLiveRef.current(committed + interim);
+      sessionFinal = committed;
+      sessionInterimRef.current = interim;
+
+      // Show: everything confirmed so far + this session's text
+      onLiveRef.current(accumulatedRef.current + committed + interim);
     };
 
     sr.onend = () => {
-      isListeningRef.current = false;
-      setIsListening(false);
       clearSilenceTimer();
-      srRef.current = null;
 
-      // Use committed text; fall back to last interim if browser never
-      // returned a final result (happens on some mobile browsers)
-      const result = committedRef.current || lastInterimRef.current;
-      if (result.trim()) {
-        onFinalRef.current(result.trim());
+      // Add this session's confirmed text to the running total
+      const sessionText = sessionFinal || sessionInterimRef.current;
+      if (sessionText.trim()) {
+        accumulatedRef.current += sessionText + ' ';
+      }
+      sessionInterimRef.current = '';
+
+      if (shouldRestartRef.current) {
+        // User is still listening — start a fresh session immediately
+        try {
+          createSession();
+        } catch (_) {
+          shouldRestartRef.current = false;
+          setIsListening(false);
+          const result = accumulatedRef.current.trim();
+          if (result) onFinalRef.current(result);
+        }
+      } else {
+        // Done — fire the final callback with everything accumulated
+        setIsListening(false);
+        srRef.current = null;
+        const result = accumulatedRef.current.trim();
+        accumulatedRef.current = '';
+        if (result) onFinalRef.current(result);
       }
     };
 
     sr.onerror = (event) => {
-      // 'no-speech' and 'aborted' are expected — don't surface as errors
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
         setError(`Mic error: ${event.error}`);
+        shouldRestartRef.current = false;
+        setIsListening(false);
+        accumulatedRef.current = '';
       }
-      isListeningRef.current = false;
-      setIsListening(false);
-      clearSilenceTimer();
-      srRef.current = null;
+      // On no-speech, just let onend restart the session naturally
     };
 
     srRef.current = sr;
     try {
       sr.start();
     } catch (e) {
-      // start() can throw if called before onend fires from a previous session
       setError('Could not start microphone. Try again.');
-      isListeningRef.current = false;
+      shouldRestartRef.current = false;
       setIsListening(false);
     }
   }, [isSupported]);
 
+  const startListening = useCallback(() => {
+    if (!isSupported) return;
+    if (shouldRestartRef.current) return; // already running
+
+    accumulatedRef.current    = '';
+    sessionInterimRef.current = '';
+    shouldRestartRef.current  = true;
+    setIsListening(true);
+    setError(null);
+    createSession();
+  }, [isSupported, createSession]);
+
   const stopListening = useCallback(() => {
+    shouldRestartRef.current = false;
     clearSilenceTimer();
     srRef.current?.stop();
   }, []);
