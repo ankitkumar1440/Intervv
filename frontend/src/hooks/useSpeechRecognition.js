@@ -32,7 +32,7 @@ export const useSpeechRecognition = (onLive, onFinal) => {
     sr.onresult = (event) => {
       // Reset the silence timer on every new speech chunk
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = setTimeout(() => sr.stop(), 2000);
+      silenceTimerRef.current = setTimeout(() => sr.stop(), 500);
 
       // Rebuild the committed portion from scratch using ALL final results so far
       // (avoids double-appending on repeated events for the same result index)
