@@ -1,56 +1,56 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-import { useAuth }              from './context/AuthContext';
+import { useAuth } from './context/AuthContext';
 import { sendMessage, getChatSessions, getChatById, deleteChat } from './services/chatApi';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 
-import HomePage   from './pages/HomePage';
-import LoginPage   from './components/Auth/LoginPage';
-import SignupPage  from './components/Auth/SignupPage';
+import HomePage from './pages/HomePage';
+import LoginPage from './components/Auth/LoginPage';
+import SignupPage from './components/Auth/SignupPage';
 import ChatSidebar from './components/UI/ChatSidebar';
-import AppHeader   from './components/UI/AppHeader';
+import AppHeader from './components/UI/AppHeader';
 import ErrorBanner from './components/UI/ErrorBanner';
-import ChatWindow  from './components/Chat/ChatWindow';
-import ChatInput   from './components/Chat/ChatInput';
+import ChatWindow from './components/Chat/ChatWindow';
+import ChatInput from './components/Chat/ChatInput';
 
 import './styles/app.css';
 
 function App() {
   const { isLoggedIn } = useAuth();
-  const [authPage,     setAuthPage]     = useState('home');
-  const [showHome,     setShowHome]     = useState(false);
-  const [sidebarOpen,  setSidebarOpen]  = useState(false);
-  const [sessions,     setSessions]     = useState([]);
+  const [authPage, setAuthPage] = useState('home');
+  const [showHome, setShowHome] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sessions, setSessions] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
-  const [messages,     setMessages]     = useState([]);
-  const [loading,      setLoading]      = useState(false);
-  const [error,        setError]        = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Refs — never cause re-renders
-  const chatEndRef    = useRef(null);
+  const chatEndRef = useRef(null);
   const activeChatRef = useRef(null);
-  const loadingRef    = useRef(false);
-  const textareaRef   = useRef(null);
+  const loadingRef = useRef(false);
+  const textareaRef = useRef(null);
 
   // Keep refs in sync
   useEffect(() => { activeChatRef.current = activeChatId; }, [activeChatId]);
-  useEffect(() => { loadingRef.current    = loading;      }, [loading]);
+  useEffect(() => { loadingRef.current = loading; }, [loading]);
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
   useEffect(() => { if (isLoggedIn) loadSessions(); }, [isLoggedIn]);
 
   // Speech hook — receives text via callback, writes directly to textarea DOM
   const { isListening, isSupported, error: speechError, clearError, startListening, stopListening } =
-  useSpeechRecognition(
-    // Live text — show as typing
-    (liveText) => {
-      if (textareaRef.current) textareaRef.current.value = liveText;
-    },
-    // Final text — send message
-    (finalText) => {
-      if (textareaRef.current) textareaRef.current.value = finalText;
-      setTimeout(() => handleSend(), 100);
-    }
-  );
+    useSpeechRecognition(
+      // Live text — show as typing
+      (liveText) => {
+        if (textareaRef.current) textareaRef.current.value = liveText;
+      },
+      // Final text — send message
+      (finalText) => {
+        if (textareaRef.current) textareaRef.current.value = finalText;
+        setTimeout(() => handleSend(), 30);
+      }
+    );
 
   const visibleError = error || speechError;
 
@@ -105,7 +105,7 @@ function App() {
     } catch { setError('Could not load chat.'); }
   };
 
-  const handleNewChat    = () => { setActiveChatId(null); setMessages([]); setError(null); };
+  const handleNewChat = () => { setActiveChatId(null); setMessages([]); setError(null); };
   const handleDeleteChat = async (chatId) => {
     await deleteChat(chatId);
     setSessions(prev => prev.filter(s => s._id !== chatId));
@@ -118,10 +118,10 @@ function App() {
 
   if (!isLoggedIn) {
     return authPage === 'home'
-      ? <HomePage  onLogin={() => setAuthPage('login')} onSignup={() => setAuthPage('signup')} />
+      ? <HomePage onLogin={() => setAuthPage('login')} onSignup={() => setAuthPage('signup')} />
       : authPage === 'login'
-      ? <LoginPage  onSwitch={() => setAuthPage('signup')} onHome={() => setAuthPage('home')} />
-      : <SignupPage onSwitch={() => setAuthPage('login')}  onHome={() => setAuthPage('home')} />;
+        ? <LoginPage onSwitch={() => setAuthPage('signup')} onHome={() => setAuthPage('home')} />
+        : <SignupPage onSwitch={() => setAuthPage('login')} onHome={() => setAuthPage('home')} />;
   }
 
   return (

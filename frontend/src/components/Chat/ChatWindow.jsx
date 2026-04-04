@@ -7,7 +7,8 @@ const ChatWindow = ({ history, loading, chatEndRef }) => (
   <main className="chat-window">
     {history.length === 0 && (
       <p className="chat-window__empty">
-        🎙️ Start by speaking or typing a message below.
+        <span className="chat-window__empty-icon">🎙️</span>
+        Start by speaking or typing a message below.
       </p>
     )}
 

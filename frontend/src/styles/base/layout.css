@@ -1,7 +1,7 @@
 /* App Shell Layout */
 html, body, #root {
   height: 100dvh;
-  background: var(--bg);
+  background: var(--bg-gradient);
   color: var(--text);
 }
 

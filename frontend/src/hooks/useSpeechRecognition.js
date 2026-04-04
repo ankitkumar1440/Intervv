@@ -8,7 +8,8 @@ export const useSpeechRecognition = (onLive, onFinal) => {
 
   const srRef = useRef(null);
   const silenceTimerRef = useRef(null);
-  const finalTranscriptRef = useRef('');
+  // Stores only the portion of speech already marked as "final" by the browser
+  const committedRef = useRef('');
 
   const isSupported = Boolean(SR);
 
@@ -17,45 +18,46 @@ export const useSpeechRecognition = (onLive, onFinal) => {
 
     const sr = new SR();
 
-    sr.continuous = false;      // 👈 keep listening
+    // continuous=true: browser keeps the session alive; we stop it via silence timer
+    sr.continuous = true;
     sr.interimResults = true;
     sr.lang = 'en-US';
 
     sr.onstart = () => {
       setIsListening(true);
       setError(null);
-      finalTranscriptRef.current = '';
+      committedRef.current = '';
     };
 
     sr.onresult = (event) => {
-  if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      // Reset the silence timer on every new speech chunk
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = setTimeout(() => sr.stop(), 2000);
 
-  silenceTimerRef.current = setTimeout(() => sr.stop(), 2000);
+      // Rebuild the committed portion from scratch using ALL final results so far
+      // (avoids double-appending on repeated events for the same result index)
+      let committed = '';
+      let interim = '';
 
-  let interimText = '';
+      for (let i = 0; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          committed += transcript;
+        } else {
+          interim += transcript;
+        }
+      }
 
-  for (let i = event.resultIndex; i < event.results.length; i++) {
-    const transcript = event.results[i][0].transcript;
-    if (event.results[i].isFinal) {
-      finalTranscriptRef.current += transcript;
-    } else {
-      interimText += transcript;
-    }
-  }
-
-  const display = finalTranscriptRef.current + interimText;
-  onLive(display);
-};
+      committedRef.current = committed;
+      onLive(committed + interim);
+    };
 
     sr.onend = () => {
       setIsListening(false);
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
 
-      if (finalTranscriptRef.current) {
-        onFinal(finalTranscriptRef.current);
-      }
-
-      if (silenceTimerRef.current) {
-        clearTimeout(silenceTimerRef.current);
+      if (committedRef.current) {
+        onFinal(committedRef.current);
       }
     };
 
@@ -67,13 +69,12 @@ export const useSpeechRecognition = (onLive, onFinal) => {
     };
 
     srRef.current = sr;
-
   }, [isSupported]);
 
   const startListening = useCallback(() => {
-  finalTranscriptRef.current = '';
-  srRef.current?.start();
-}, []);
+    committedRef.current = '';
+    srRef.current?.start();
+  }, []);
 
   const stopListening = useCallback(() => {
     srRef.current?.stop();
@@ -87,6 +88,6 @@ export const useSpeechRecognition = (onLive, onFinal) => {
     error,
     startListening,
     stopListening,
-    clearError
+    clearError,
   };
 };

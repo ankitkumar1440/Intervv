@@ -1,28 +1,39 @@
 .app-header {
-  display: flex; align-items: center; gap: 14px;
-  padding: 18px 24px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  /* Frosted glass header */
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur-strong));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong));
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 1px 0 var(--accent-glow);
   flex-shrink: 0;
+  position: relative;
+  z-index: 10;
 }
-.app-header__logo     { font-size: 2rem; }
-.app-header__title    { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.01em; }
-.app-header__subtitle { font-size: 0.8rem; color: var(--text-muted); }
 
+.app-header__logo     { font-size: 1.8rem; }
+.app-header__title    { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; }
+.app-header__subtitle { font-size: 0.78rem; color: var(--text-muted); }
+
+/* Menu button — always visible, used for sidebar toggle */
 .app-header__menu-btn {
-  display: none;
-  background: none;
-  border: none;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
   color: var(--text);
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   cursor: pointer;
-  padding: 4px 8px;
-  margin-right: 8px;
+  padding: 6px 10px;
+  margin-right: 4px;
   flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s;
 }
-
-@media (max-width: 768px) {
-  .app-header__menu-btn {
-    display: block;
-  }
+.app-header__menu-btn:hover {
+  background: var(--glass-bg-strong);
+  border-color: rgba(79, 142, 247, 0.4);
 }
